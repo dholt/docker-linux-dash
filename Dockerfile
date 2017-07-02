@@ -1,19 +1,17 @@
 FROM alpine:latest
+# docker run --rm -ti --net=host --ipc=host --pid=host --privileged --name test alpine:latest
 
 LABEL maintainer="Douglas Holt <dholt@nvidia.com>"
 
+ENV LINUX_DASH_SERVER_PORT 8081
 EXPOSE 8081
 
-RUN echo nameserver 8.8.8.8 >> /etc/resolv.conf
+WORKDIR /
+RUN apk add --no-cache git nodejs nodejs-npm netcat-openbsd
 
-RUN apk add --no-cache git curl unzip python && \
-    git clone --depth 1 https://github.com/afaqurk/linux-dash.git && \
-    cd linux-dash/app/server/ && \
-    curl -LOk https://github.com/afaqurk/linux-dash/archive/master.zip && \
-    unzip master.zip && \
-    cd linux-dash-master/app/server && \
-    python index.py --port 8081
+RUN git clone --depth 1 https://github.com/afaqurk/linux-dash.git
 
-WORKDIR "/linux-dash/app/server/linux-dash-master/app/server"
+WORKDIR /linux-dash/app/server
+RUN npm install --production
 
-CMD ["python", "index.py", "--port", "8081"]
+CMD ["node", "index.js"]
